@@ -62,7 +62,7 @@ function PlanCard({ plan, current }: { plan: typeof subscriptionPlans[0]; curren
       'relative rounded-2xl border p-6 flex flex-col gap-5 transition-all duration-200',
       current
         ? 'border-cyan-500/40 bg-cyan-500/5'
-        : plan.highlighted
+        : plan.popular
         ? 'border-violet-500/30 bg-violet-500/5 ring-1 ring-violet-500/20'
         : 'border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12]'
     )}>
@@ -73,7 +73,7 @@ function PlanCard({ plan, current }: { plan: typeof subscriptionPlans[0]; curren
             Current Plan
           </span>
         )}
-        {plan.highlighted && !current && (
+        {plan.popular && !current && (
           <span className="text-[10px] px-2.5 py-1 rounded-full bg-violet-500/15 text-violet-400 border border-violet-500/30 font-semibold flex items-center gap-1">
             <Star className="w-2.5 h-2.5" /> Most Popular
           </span>
@@ -102,7 +102,7 @@ function PlanCard({ plan, current }: { plan: typeof subscriptionPlans[0]; curren
 
       {/* CTA */}
       <Button
-        variant={current ? 'ghost' : plan.highlighted ? 'primary' : 'outline'}
+        variant={current ? 'ghost' : plan.popular ? 'primary' : 'outline'}
         className="w-full"
         disabled={current}
         loading={loading}
