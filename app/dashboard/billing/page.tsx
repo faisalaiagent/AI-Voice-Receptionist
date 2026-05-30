@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
-import { CreditCard, Zap, Check, ArrowRight, TrendingUp, AlertTriangle,
-  Download, Calendar, ChevronRight, Star } from 'lucide-react'
+import { CreditCard, Zap, Check, ArrowRight, AlertTriangle,
+  Download, Calendar, Star } from 'lucide-react'
 import { TopBar } from '@/components/dashboard/TopBar'
 import { Card, CardHeader, CardBody } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
@@ -9,22 +9,26 @@ import { subscriptionPlans, mockUsage } from '@/lib/data'
 import { usagePct, cn } from '@/lib/utils'
 
 // ─── USAGE BAR ────────────────────────────────────────────────
-function UsageBar({ label, used, limit, color = 'cyan' }: {
-  label: string; used: number; limit: number; color?: string
+function UsageBar({ label, used, limit }: {
+  label: string; used: number; limit: number
 }) {
   const pct = usagePct(used, limit)
-  const warn = pct > 80
+  const warn   = pct > 80
   const danger = pct > 95
-
-  const barColor = danger ? 'from-rose-500 to-red-500'
-    : warn ? 'from-amber-500 to-orange-500'
+  const barColor = danger
+    ? 'from-rose-500 to-red-500'
+    : warn
+    ? 'from-amber-500 to-orange-500'
     : 'from-cyan-500 to-blue-500'
 
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
         <span className="text-sm text-slate-300">{label}</span>
-        <span className={cn('text-xs font-semibold', danger ? 'text-rose-400' : warn ? 'text-amber-400' : 'text-slate-400')}>
+        <span className={cn(
+          'text-xs font-semibold',
+          danger ? 'text-rose-400' : warn ? 'text-amber-400' : 'text-slate-400'
+        )}>
           {used.toLocaleString()} / {limit.toLocaleString()}
         </span>
       </div>
@@ -48,6 +52,10 @@ function UsageBar({ label, used, limit, color = 'cyan' }: {
 }
 
 // ─── PLAN CARD ────────────────────────────────────────────────
+// Uses exact field names from lib/data.ts:
+//   popular (not highlighted), desc (not description)
+//   no cta field → we derive the label here
+//   no period field → we hardcode "/ month"
 function PlanCard({ plan, current }: { plan: typeof subscriptionPlans[0]; current: boolean }) {
   const [loading, setLoading] = useState(false)
 
@@ -56,6 +64,13 @@ function PlanCard({ plan, current }: { plan: typeof subscriptionPlans[0]; curren
     await new Promise(r => setTimeout(r, 1200))
     setLoading(false)
   }
+
+  // Derive CTA label from plan id since data has no cta field
+  const ctaLabel =
+    plan.id === 'free'       ? 'Get Started'    :
+    plan.id === 'starter'    ? 'Start Trial'    :
+    plan.id === 'pro'        ? 'Go Pro'         :
+    'Contact Sales'
 
   return (
     <div className={cn(
@@ -67,7 +82,7 @@ function PlanCard({ plan, current }: { plan: typeof subscriptionPlans[0]; curren
         : 'border-white/[0.06] bg-white/[0.02] hover:border-white/[0.12]'
     )}>
       {/* Badges */}
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 min-h-[24px]">
         {current && (
           <span className="text-[10px] px-2.5 py-1 rounded-full bg-cyan-500/15 text-cyan-400 border border-cyan-500/30 font-semibold">
             Current Plan
@@ -83,10 +98,12 @@ function PlanCard({ plan, current }: { plan: typeof subscriptionPlans[0]; curren
       {/* Plan name & price */}
       <div>
         <p className="text-lg font-bold text-white font-display">{plan.name}</p>
-        <p className="text-xs text-slate-500 mt-0.5">{plan.description}</p>
+        {/* desc field (not description) */}
+        <p className="text-xs text-slate-500 mt-0.5">{plan.desc}</p>
         <div className="flex items-baseline gap-1.5 mt-3">
           <span className="text-3xl font-bold text-white font-display">${plan.price}</span>
-          <span className="text-sm text-slate-500">{plan.period}</span>
+          {/* no period field in data — hardcoded */}
+          <span className="text-sm text-slate-500">/ month</span>
         </div>
       </div>
 
@@ -100,7 +117,7 @@ function PlanCard({ plan, current }: { plan: typeof subscriptionPlans[0]; curren
         ))}
       </ul>
 
-      {/* CTA */}
+      {/* CTA button */}
       <Button
         variant={current ? 'ghost' : plan.popular ? 'primary' : 'outline'}
         className="w-full"
@@ -108,7 +125,7 @@ function PlanCard({ plan, current }: { plan: typeof subscriptionPlans[0]; curren
         loading={loading}
         onClick={handleUpgrade}
       >
-        {current ? 'Current Plan' : plan.cta}
+        {current ? 'Current Plan' : ctaLabel}
         {!current && <ArrowRight className="w-4 h-4" />}
       </Button>
     </div>
@@ -116,7 +133,9 @@ function PlanCard({ plan, current }: { plan: typeof subscriptionPlans[0]; curren
 }
 
 // ─── INVOICE ROW ──────────────────────────────────────────────
-function InvoiceRow({ date, amount, status }: { date: string; amount: string; status: string }) {
+function InvoiceRow({ date, amount, status }: {
+  date: string; amount: string; status: string
+}) {
   return (
     <div className="flex items-center justify-between py-3 border-b border-white/[0.04] last:border-0">
       <div>
@@ -124,7 +143,12 @@ function InvoiceRow({ date, amount, status }: { date: string; amount: string; st
         <p className="text-xs text-slate-500">Pro Plan — Monthly</p>
       </div>
       <div className="flex items-center gap-3">
-        <span className={cn('text-xs px-2 py-0.5 rounded-full', status === 'Paid' ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400')}>
+        <span className={cn(
+          'text-xs px-2 py-0.5 rounded-full',
+          status === 'Paid'
+            ? 'bg-emerald-500/10 text-emerald-400'
+            : 'bg-amber-500/10 text-amber-400'
+        )}>
           {status}
         </span>
         <span className="text-sm font-semibold text-white">{amount}</span>
@@ -148,14 +172,17 @@ export default function BillingPage() {
       />
 
       <div className="flex-1 p-6 space-y-6">
+
         {/* Current plan banner */}
         <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 p-5 rounded-2xl border border-cyan-500/20 bg-gradient-to-r from-cyan-500/10 to-blue-600/5 animate-slide-up">
           <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center flex-shrink-0">
             <Zap className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1">
-            <p className="text-white font-semibold">You're on the Pro Plan</p>
-            <p className="text-sm text-slate-400 mt-0.5">Next billing date: August 15, 2025 · $149/month</p>
+            <p className="text-white font-semibold">You&apos;re on the Pro Plan</p>
+            <p className="text-sm text-slate-400 mt-0.5">
+              Next billing date: August 15, 2025 · $149/month
+            </p>
           </div>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="sm">Cancel Plan</Button>
@@ -166,7 +193,10 @@ export default function BillingPage() {
         </div>
 
         {/* Usage meters */}
-        <Card className="animate-slide-up" style={{ animationDelay: '80ms' } as React.CSSProperties}>
+        <Card
+          className="animate-slide-up"
+          style={{ animationDelay: '80ms' } as React.CSSProperties}
+        >
           <CardHeader>
             <div>
               <h3 className="font-semibold text-white text-sm">Usage This Month</h3>
@@ -178,26 +208,49 @@ export default function BillingPage() {
             </div>
           </CardHeader>
           <CardBody className="space-y-6">
-            <UsageBar label="Calls" used={mockUsage.calls.used} limit={mockUsage.calls.limit} />
-            <UsageBar label="Minutes" used={mockUsage.minutes.used} limit={mockUsage.minutes.limit} />
-            <UsageBar label="WhatsApp Messages" used={mockUsage.whatsapp.used} limit={mockUsage.whatsapp.limit} />
+            <UsageBar
+              label="Calls"
+              used={mockUsage.calls.used}
+              limit={mockUsage.calls.limit}
+            />
+            <UsageBar
+              label="Minutes"
+              used={mockUsage.minutes.used}
+              limit={mockUsage.minutes.limit}
+            />
+            <UsageBar
+              label="WhatsApp Messages"
+              used={mockUsage.whatsapp.used}
+              limit={mockUsage.whatsapp.limit}
+            />
           </CardBody>
         </Card>
 
-        {/* Plans */}
-        <div className="animate-slide-up" style={{ animationDelay: '160ms' } as React.CSSProperties}>
+        {/* Plans grid */}
+        <div
+          className="animate-slide-up"
+          style={{ animationDelay: '160ms' } as React.CSSProperties}
+        >
           <h3 className="font-semibold text-white mb-4">Available Plans</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             {subscriptionPlans.map(plan => (
-              <PlanCard key={plan.id} plan={plan} current={plan.id === currentPlan} />
+              <PlanCard
+                key={plan.id}
+                plan={plan}
+                current={plan.id === currentPlan}
+              />
             ))}
           </div>
         </div>
 
         {/* Payment method + Invoices */}
         <div className="grid lg:grid-cols-2 gap-6">
+
           {/* Payment method */}
-          <Card className="animate-slide-up" style={{ animationDelay: '240ms' } as React.CSSProperties}>
+          <Card
+            className="animate-slide-up"
+            style={{ animationDelay: '240ms' } as React.CSSProperties}
+          >
             <CardHeader>
               <h3 className="font-semibold text-white text-sm">Payment Method</h3>
               <Button variant="ghost" size="sm">Update</Button>
@@ -211,13 +264,18 @@ export default function BillingPage() {
                   <p className="text-sm font-medium text-white">•••• •••• •••• 4242</p>
                   <p className="text-xs text-slate-500">Expires 12/27</p>
                 </div>
-                <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">Default</span>
+                <span className="ml-auto text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  Default
+                </span>
               </div>
             </CardBody>
           </Card>
 
           {/* Invoice history */}
-          <Card className="animate-slide-up" style={{ animationDelay: '280ms' } as React.CSSProperties}>
+          <Card
+            className="animate-slide-up"
+            style={{ animationDelay: '280ms' } as React.CSSProperties}
+          >
             <CardHeader>
               <h3 className="font-semibold text-white text-sm">Invoice History</h3>
               <Button variant="ghost" size="sm">View all</Button>
@@ -230,6 +288,7 @@ export default function BillingPage() {
               ].map((inv, i) => <InvoiceRow key={i} {...inv} />)}
             </CardBody>
           </Card>
+
         </div>
       </div>
     </div>
