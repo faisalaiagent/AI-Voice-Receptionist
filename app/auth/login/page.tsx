@@ -5,15 +5,14 @@ import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Mic, ArrowRight, Lock, Mail, Zap, Shield, Phone } from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
-import { cn } from '@/lib/utils'
 
 const DEMO_EMAIL    = 'admin@meridianhealth.com'
 const DEMO_PASSWORD = 'demo123'
 
 const features = [
-  { icon: Phone, text: 'AI answers every call instantly' },
-  { icon: Zap,   text: 'Books appointments automatically' },
-  { icon: Shield,text: 'Enterprise-grade security & HIPAA ready' },
+  { icon: Phone,  text: 'AI answers every call instantly' },
+  { icon: Zap,    text: 'Books appointments automatically' },
+  { icon: Shield, text: 'Enterprise-grade security & HIPAA ready' },
 ]
 
 export default function LoginPage() {
@@ -28,10 +27,7 @@ export default function LoginPage() {
     e.preventDefault()
     setError('')
     setLoading(true)
-
-    // Simulate auth delay
     await new Promise(r => setTimeout(r, 1200))
-
     if (email === DEMO_EMAIL && password === DEMO_PASSWORD) {
       router.push('/dashboard/overview')
     } else {
@@ -40,11 +36,21 @@ export default function LoginPage() {
     }
   }
 
+  // Eye toggle button rendered separately — passed as iconRight
+  const eyeButton = (
+    <button
+      type="button"
+      onClick={() => setShowPwd(!showPwd)}
+      className="text-slate-500 hover:text-slate-300 transition-colors"
+    >
+      {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+    </button>
+  )
+
   return (
     <div className="min-h-screen auth-bg flex">
-      {/* Left — branding panel */}
+      {/* ── Left branding panel ── */}
       <div className="hidden lg:flex lg:w-[55%] flex-col justify-between p-12 relative overflow-hidden">
-        {/* Background elements */}
         <div className="absolute inset-0 bg-dot-grid opacity-40" />
         <div className="absolute top-1/4 -left-20 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 right-0 w-80 h-80 bg-violet-500/10 rounded-full blur-3xl" />
@@ -60,25 +66,22 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Hero content */}
+        {/* Hero */}
         <div className="relative space-y-6 animate-slide-up" style={{ animationDelay: '100ms' }}>
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-cyan-500/30 bg-cyan-500/10 text-cyan-400 text-xs font-medium">
             <span className="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse" />
             Powered by Inworld AI + Twilio
           </div>
-
           <h1 className="text-5xl font-display font-bold text-white leading-tight">
             Your AI Receptionist,{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500 text-glow">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-500">
               Always On
             </span>
           </h1>
-
           <p className="text-lg text-slate-400 leading-relaxed max-w-md">
             Never miss a call again. Our AI answers instantly, books appointments,
             and sends WhatsApp confirmations — 24/7.
           </p>
-
           <div className="space-y-3">
             {features.map((f, i) => {
               const Icon = f.icon
@@ -95,12 +98,12 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Stats bar */}
+        {/* Stats */}
         <div className="relative grid grid-cols-3 gap-4 animate-fade-in" style={{ animationDelay: '400ms' }}>
           {[
-            { value: '99.9%', label: 'Uptime SLA' },
+            { value: '99.9%',  label: 'Uptime SLA' },
             { value: '<400ms', label: 'AI Response' },
-            { value: '87%', label: 'Resolution Rate' },
+            { value: '87%',    label: 'Resolution Rate' },
           ].map((s, i) => (
             <div key={i} className="text-center p-3 rounded-xl border border-white/[0.06] bg-white/[0.03]">
               <p className="text-xl font-bold text-white font-display">{s.value}</p>
@@ -110,9 +113,9 @@ export default function LoginPage() {
         </div>
       </div>
 
-      {/* Right — login form */}
+      {/* ── Right login form ── */}
       <div className="flex-1 flex items-center justify-center p-6 lg:p-12">
-        <div className="w-full max-w-md space-y-8 animate-scale-in">
+        <div className="w-full max-w-md space-y-8">
           {/* Mobile logo */}
           <div className="lg:hidden flex items-center gap-3 justify-center">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-400 to-blue-600 flex items-center justify-center">
@@ -146,6 +149,7 @@ export default function LoginPage() {
               required
             />
 
+            {/* Password field — iconRight used instead of rightElement */}
             <Input
               label="Password"
               type={showPwd ? 'text' : 'password'}
@@ -153,22 +157,20 @@ export default function LoginPage() {
               onChange={e => setPassword(e.target.value)}
               placeholder="••••••••"
               icon={<Lock className="w-4 h-4" />}
-              iconRight={
-                <button type="button" onClick={() => setShowPwd(!showPwd)}
-                  className="text-slate-500 hover:text-slate-300 transition-colors">
-                  {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                </button>
-              }
+              iconRight={eyeButton}
               required
             />
 
             {error && (
-              <p className="text-sm text-rose-400 animate-fade-in">{error}</p>
+              <p className="text-sm text-rose-400">{error}</p>
             )}
 
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2 cursor-pointer">
-                <input type="checkbox" className="rounded border-white/20 bg-white/5 text-cyan-500 focus:ring-cyan-500" />
+                <input
+                  type="checkbox"
+                  className="rounded border-white/20 bg-white/5 text-cyan-500 focus:ring-cyan-500"
+                />
                 <span className="text-sm text-slate-400">Remember me</span>
               </label>
               <button type="button" className="text-sm text-cyan-400 hover:text-cyan-300 transition-colors">
@@ -183,7 +185,7 @@ export default function LoginPage() {
           </form>
 
           <p className="text-center text-sm text-slate-500">
-            Don't have an account?{' '}
+            Don&apos;t have an account?{' '}
             <Link href="/auth/register" className="text-cyan-400 hover:text-cyan-300 transition-colors font-medium">
               Start free trial
             </Link>
