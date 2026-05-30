@@ -1,21 +1,25 @@
 // ============================================================
-// INPUT — styled input, textarea, select components
+// INPUT — styled input, textarea, select, toggle components
 // ============================================================
 import { forwardRef, InputHTMLAttributes, TextareaHTMLAttributes, SelectHTMLAttributes } from 'react'
 import { cn } from '@/lib/utils'
 
 // ── Text Input ────────────────────────────────────────────────
-interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string
   error?: string
   hint?: string
   icon?: React.ReactNode
   iconRight?: React.ReactNode
+  // alias used by login/register pages for the show/hide password button
+  rightElement?: React.ReactNode
 }
 
 export const Input = forwardRef<HTMLInputElement, InputProps>(
-  ({ label, error, hint, icon, iconRight, className, id, ...props }, ref) => {
+  ({ label, error, hint, icon, iconRight, rightElement, className, id, ...props }, ref) => {
     const inputId = id ?? label?.toLowerCase().replace(/\s+/g, '-')
+    // rightElement is an alias for iconRight — supports interactive elements (buttons)
+    const rightSlot = rightElement ?? iconRight
     return (
       <div className="flex flex-col gap-1.5">
         {label && (
@@ -24,8 +28,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
           </label>
         )}
         <div className="relative">
+          {/* Left icon — decorative, pointer-events disabled */}
           {icon && (
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#435A7A] pointer-events-none">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[#435A7A] pointer-events-none z-10">
               {icon}
             </span>
           )}
@@ -34,16 +39,17 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             id={inputId}
             className={cn(
               'input-base',
-              icon && 'pl-9',
-              iconRight && 'pr-9',
+              icon       && 'pl-9',
+              rightSlot  && 'pr-9',
               error && 'border-rose-500/50 focus:border-rose-500 focus:shadow-[0_0_0_3px_rgba(244,63,94,0.12)]',
               className
             )}
             {...props}
           />
-          {iconRight && (
-            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#435A7A]">
-              {iconRight}
+          {/* Right slot — supports both icons and interactive buttons */}
+          {rightSlot && (
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 text-[#435A7A] flex items-center">
+              {rightSlot}
             </span>
           )}
         </div>
@@ -145,8 +151,14 @@ export function Toggle({ checked, onChange, label, description, size = 'md' }: T
     <label className="flex items-center justify-between gap-4 cursor-pointer group">
       {(label || description) && (
         <div>
-          {label && <p className="text-sm font-medium text-[#F0F6FF] group-hover:text-white transition-colors">{label}</p>}
-          {description && <p className="text-xs text-[#435A7A] mt-0.5">{description}</p>}
+          {label && (
+            <p className="text-sm font-medium text-[#F0F6FF] group-hover:text-white transition-colors">
+              {label}
+            </p>
+          )}
+          {description && (
+            <p className="text-xs text-[#435A7A] mt-0.5">{description}</p>
+          )}
         </div>
       )}
       <button
@@ -155,7 +167,8 @@ export function Toggle({ checked, onChange, label, description, size = 'md' }: T
         aria-checked={checked}
         onClick={() => onChange(!checked)}
         className={cn(
-          'relative flex-shrink-0 rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-[#0D1B35]',
+          'relative flex-shrink-0 rounded-full transition-all duration-200',
+          'focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:ring-offset-2 focus:ring-offset-[#0D1B35]',
           size === 'md' ? 'w-10 h-6' : 'w-8 h-5',
           checked
             ? 'bg-cyan-500 shadow-[0_0_12px_rgba(6,182,212,0.4)]'
