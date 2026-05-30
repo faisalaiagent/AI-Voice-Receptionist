@@ -153,7 +153,7 @@ export default function LoginPage() {
               onChange={e => setPassword(e.target.value)}
               placeholder="••••••••"
               icon={<Lock className="w-4 h-4" />}
-              rightElement={
+              iconRight={
                 <button type="button" onClick={() => setShowPwd(!showPwd)}
                   className="text-slate-500 hover:text-slate-300 transition-colors">
                   {showPwd ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
